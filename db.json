@@ -84,7 +84,7 @@
                   "description": "Created Android application for mobile payments over NFC. The application allowed for making bank payments with smartphones, transfer of data was encrypted. SQL Lite database as a data storage mechanism.",
                   "start_date": "2016-10-01T00:00:00.000Z",
                   "end_date": "2016-12-31T00:00:00.000Z",
-                  "company": {
+                  "client": {
                     "name": "Mastercard",
                     "url": "https://www.mastercard.co.uk/",
                     "logo_url": "https://www.mastercard.pl/pl-pl/_jcr_content/contentpar/herobanner/herobannerpar/hero/image.adaptive.full.high.jpg/1601552579620.jpg"}
