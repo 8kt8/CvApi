@@ -5,7 +5,7 @@
       "first_name": "Szymon",
       "last_name": "Katlewski",
       "photo_url": "https://media-exp1.licdn.com/dms/image/C4D03AQGoZnYX3dEFsQ/profile-displayphoto-shrink_400_400/0?e=1610582400&v=beta&t=ceo6cxqYxSG__nieRPcmSKm3N6_CugWJ25dAJPgUe5o",
-      "date_of_birth": "1992-03-31'T'00:00:00.000Z",
+      "date_of_birth": "1992-03-31T00:00:00.000Z",
       "about": "I am a Software Engineer with Master's degree in Computer Science, and over five years of commercial development experience - mainly in mobile domain, including Android development. I have experience across the software lifecycle, from concept and design through to development and testing.",
       "contact": {
         "email": "szymon.katlewski@gmail.com",
@@ -44,14 +44,14 @@
               "city": "Bydgoszcz",
               "country": "Poland",
               "district": "Kuyavian-Pomeranian",
-              "start_date": "2015-06-01'T'00:00:00.000Z",
-              "end_date": "2015-08-31'T'00:00:00.000Z",
+              "start_date": "2015-06-01T00:00:00.000Z",
+              "end_date": "2015-08-31T00:00:00.000Z",
               "projects": [
                 {
                   "name": "Raspberoid",
                   "description": "Created Raspberoid application for smartphones - development and design. The aim of the application was to control Kodi software. The application communicated with the server in a request - response manner. The application could operate in two modes: simple remote control and gesture-based control. The application could operate in two configurations: many application instances controlling one device running Kodi, or one application instance controlling many devices running Kodi. Other functionalities covered: creation of playlists, play sets, multimedia browsing.",
-                  "start_date": "2015-06-01'T'00:00:00.000Z",
-                  "end_date": "2015-08-31'T'00:00:00.000Z",
+                  "start_date": "2015-06-01T00:00:00.000Z",
+                  "end_date": "2015-08-31T00:00:00.000Z",
                   "client": {
                     "name": "Mobica",
                     "url": "https://www.mobica.com",
@@ -65,14 +65,14 @@
               "city": "Bydgoszcz",
               "country": "Poland",
               "district": "Kuyavian-Pomeranian",
-              "start_date": "2015-09-01'T'00:00:00.000Z",
-              "end_date": "2016-09-30'T'00:00:00.000Z",
+              "start_date": "2015-09-01T00:00:00.000Z",
+              "end_date": "2016-09-30T00:00:00.000Z",
               "projects": [
                 {
                   "name": "T-Mobile-Tuesdays",
-                  "description": "Created a marketing application for Android platform for a mobile network company. Implemented communication using RES'T' approach. Created UI experience with animations and transitions between the screens. Application allowed for winning prizes after playing one of five mini-games.",
-                  "start_date": "2015-09-01'T'0'0:00:00.000Z",
-                  "end_date": "2016-09-30'T'00:00:00.000Z",
+                  "description": "Created a marketing application for Android platform for a mobile network company. Implemented communication using REST approach. Created UI experience with animations and transitions between the screens. Application allowed for winning prizes after playing one of five mini-games.",
+                  "start_date": "2015-09-01T0'0:00:00.000Z",
+                  "end_date": "2016-09-30T00:00:00.000Z",
                   "client": {
                     "name": "T-Mobile",
                     "url": "https://www.t-mobile.com/",
@@ -82,8 +82,8 @@
                 {
                   "name": "NFC payment",
                   "description": "Created Android application for mobile payments over NFC. The application allowed for making bank payments with smartphones, transfer of data was encrypted. SQL Lite database as a data storage mechanism.",
-                  "start_date": "2016-10-01'T'00:00:00.000Z",
-                  "end_date": "2016-12-31'T'00:00:00.000Z",
+                  "start_date": "2016-10-01T00:00:00.000Z",
+                  "end_date": "2016-12-31T00:00:00.000Z",
                   "client": {
                     "name": "Mastercard",
                     "url": "https://www.mastercard.co.uk/",
@@ -96,14 +96,14 @@
               "city": "Bydgoszcz",
               "country": "Poland",
               "district": "Kuyavian-Pomeranian",
-              "start_date": "2015-09-01'T'00:00:00.000Z",
-              "end_date": "2017-09-30'T'00:00:00.000Z",
+              "start_date": "2015-09-01T00:00:00.000Z",
+              "end_date": "2017-09-30T00:00:00.000Z",
               "projects": [
                 {
                   "name": "Microportable",
                   "description": "Implemented Android application for air contamination analysis and gas leaks detection. The application communicated with the analyzer over Bluetooth. It displayed data from the analyzer on Google Maps and on a live graph. The application saved and read data from local device storage and from Google Drive.",
-                  "start_date": "2017-01-01'T'00:00:00.000Z",
-                  "end_date": "2018-03-31'T'00:00:00.000Z",
+                  "start_date": "2017-01-01T00:00:00.000Z",
+                  "end_date": "2018-03-31T00:00:00.000Z",
                   "client": {
                     "name": "ABB",
                     "url": "https://new.abb.com/",
@@ -124,13 +124,13 @@
               "city": "Gdańsk",
               "country": "Poland",
               "district": "Pomeranian",
-              "start_date": "2018-04-01'T'00:00:00.000Z",
+              "start_date": "2018-04-01T00:00:00.000Z",
               "end_date": "Present",
               "projects": [
                 {
                   "name": "GroupApp",
                   "description": "Producing travel assistant Android application in Kotlin. The application communicating with the server using REST approach and encrypted data. Application adopt Android Architecture Components, Live Data, MVMV, data flow using RxJava and Room for Database. Travel assistant helping users to buy, mange airline booking. Product supporting clients to control flight phases or Flight statuses. Architecture adopt few flavors and different build types for individual airlines",
-                  "start_date": "2018-04-01'T'00:00:00.000Z",
+                  "start_date": "2018-04-01T00:00:00.000Z",
                   "end_date": "Present",
                   "client": {
                     "name": "Lufthansa Group",
