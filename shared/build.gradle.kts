@@ -2,8 +2,6 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.android.kmp.library)
-    alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.compose.compiler)
 }
 
 // Bundles ../cv.json into the app as the offline fallback, so cv.json stays the single source of truth.
@@ -44,14 +42,7 @@ kotlin {
         commonMain {
             kotlin.srcDir(generateBundledCv)
             dependencies {
-                implementation(libs.compose.runtime)
-                implementation(libs.compose.foundation)
-                implementation(libs.compose.ui)
-                implementation(libs.compose.material3)
-                implementation(libs.androidx.lifecycle.viewmodel.compose)
-                implementation(libs.coil.compose)
-                implementation(libs.coil.network.ktor)
-                implementation(libs.ktor.client.core)
+                api(libs.ktor.client.core)
                 implementation(libs.kotlinx.serialization.json)
             }
         }

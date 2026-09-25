@@ -42,3 +42,29 @@ class RemoteCvRepository(
         private const val TIMEOUT_MS = 8_000L
     }
 }
+
+/**
+ * Entry point for both apps (Android ViewModel and the SwiftUI view model).
+ * Offline-first: show [bundledCv] immediately, then replace it with [latestCv].
+ * Owns its HTTP client - call [close] when done.
+ */
+class CvService(
+    private val client: HttpClient,
+    url: String = RemoteCvRepository.DEFAULT_URL,
+) : AutoCloseable {
+
+    /** Default engine per platform (OkHttp on Android, Darwin on iOS); also the Swift-friendly constructor. */
+    constructor() : this(HttpClient())
+
+    private val bundled = BundledCvRepository()
+    private val remote = RemoteCvRepository(client, url)
+
+    // @Throws makes failures reach Swift as thrown errors instead of crashing the app.
+    @Throws(Exception::class)
+    suspend fun bundledCv(): Cv = bundled.getCv()
+
+    @Throws(Exception::class)
+    suspend fun latestCv(): Cv = remote.getCv()
+
+    override fun close() = client.close()
+}

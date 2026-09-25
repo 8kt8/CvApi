@@ -1,6 +1,6 @@
 # CvApi
 
-Shared Kotlin Multiplatform module and CV data for the **My CV** apps:
+Shared Kotlin Multiplatform **data layer** and CV data for the **My CV** apps:
 
 - Android: [8kt8/MyCV-Android](https://github.com/8kt8/MyCV-Android)
 - iOS: [8kt8/MyCV-iOS](https://github.com/8kt8/MyCV-iOS)
@@ -12,8 +12,28 @@ Both apps include this repo as a git submodule at `CvApi/`.
 | Path | What |
 | --- | --- |
 | `cv.json` | The CV data. Edit this to update the apps. |
-| `shared/` | KMP module: models, data layer, Compose Multiplatform UI. |
+| `shared/` | KMP module: models, `cv.json` loading (bundled + remote), display helpers. No UI. |
 | `db.json` | Legacy data (2020), kept for existing consumers. |
+
+## UI per platform
+
+The UI is native on each platform and lives in the app repos:
+
+- Android: Jetpack Compose + Material 3
+- iOS: SwiftUI, following Apple's Human Interface Guidelines
+
+Both use `CvService` from this module:
+
+```kotlin
+val service = CvService()      // owns its HTTP client, call close() when done
+service.bundledCv()            // suspend - instant, offline
+service.latestCv()             // suspend - downloads cv.json from GitHub
+```
+
+```swift
+let service = CvService()
+let cv = try await service.latestCv()   // Kotlin suspend functions become Swift async
+```
 
 ## How the data flows
 
@@ -42,8 +62,9 @@ Pushing a change to `cv.json` on `main` updates installed apps on their next ref
 
 Requires JDK 17+, Android SDK platform 37 (`sdk.dir` in `local.properties` or `ANDROID_HOME`) and Xcode for iOS targets.
 
+The version catalog `gradle/libs.versions.toml` is shared with MyCV-Android, so it also lists that app's AndroidX Compose libraries.
+
 ## Stack
 
-Kotlin 2.4.20 · Compose Multiplatform 1.12.1 · Material 3 · Ktor 3.6 · Coil 3 · kotlinx.serialization
+Kotlin 2.4.20 · Ktor 3.6 · kotlinx.serialization · Android Gradle Plugin 9.4
 
-Icons: [Simple Icons](https://simpleicons.org) (CC0) and [Material Symbols](https://fonts.google.com/icons) (Apache-2.0). Brand icons are trademarks of their owners.
