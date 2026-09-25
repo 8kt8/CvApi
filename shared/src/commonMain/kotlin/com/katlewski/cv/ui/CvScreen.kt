@@ -145,7 +145,7 @@ private fun CvContent(cv: Cv) {
                 Modifier
                     .fillMaxWidth()
                     .windowInsetsTopHeight(WindowInsets.safeDrawing)
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)),
+                    .background(MaterialTheme.colorScheme.surface),
             )
         }
     }

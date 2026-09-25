@@ -124,8 +124,7 @@ private fun ExperienceCard(experience: Experience, modifier: Modifier = Modifier
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
-                MetaText(experience.period.format())
-                experience.location?.let { MetaText(it) }
+                MetaText(listOfNotNull(experience.period.format(), experience.location).joinToString("  ·  "))
             }
             experience.summary?.let {
                 Spacer(Modifier.height(spacing.small))
