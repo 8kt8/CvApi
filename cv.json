@@ -1,0 +1,66 @@
+{
+  "profile": {
+    "fullName": "Szymon Katlewski",
+    "headline": "Mobile Software Engineer · Android & iOS",
+    "about": "Software Engineer with a Master's degree in Computer Science and commercial experience in the mobile domain, from concept and design through development and testing.",
+    "photoUrl": null,
+    "location": "Poland"
+  },
+  "contacts": [
+    { "type": "GitHub", "label": "github.com/8kt8", "url": "https://github.com/8kt8" },
+    { "type": "LinkedIn", "label": "Szymon Katlewski", "url": "https://www.linkedin.com/in/szymon-katlewski-7b424a109/" },
+    { "type": "Email", "label": "szymon.katlewski@gmail.com", "url": "mailto:szymon.katlewski@gmail.com" }
+  ],
+  "experience": [
+    {
+      "companyName": "Lufthansa Systems Poland",
+      "role": "Mobile Software Engineer",
+      "period": { "start": "2018-04" },
+      "companyUrl": "https://www.lhsystems.pl/en/",
+      "location": "Gdańsk, Poland",
+      "summary": "Travel assistant Android application for Lufthansa Group, written in Kotlin.",
+      "highlights": [
+        "REST communication with encrypted data",
+        "Built the app for the Lufthansa Group client"
+      ],
+      "techStack": ["Kotlin", "RxJava", "MVVM"],
+      "apps": []
+    },
+    {
+      "companyName": "Mobica",
+      "role": "Android Software Engineer",
+      "period": { "start": "2015-06", "end": "2017-09" },
+      "companyUrl": "https://www.mobica.com",
+      "location": "Bydgoszcz, Poland",
+      "summary": "Grew from trainee to Android Software Engineer, delivering apps for T-Mobile, Mastercard and ABB.",
+      "highlights": [
+        "Microportable (ABB) - air contamination analysis over Bluetooth",
+        "NFC payment app (Mastercard) with encrypted data transfer",
+        "T-Mobile Tuesdays marketing app with REST integration",
+        "Raspberoid - Kodi remote control app"
+      ],
+      "techStack": ["Java", "Android SDK", "Bluetooth", "NFC", "MVP"],
+      "apps": []
+    }
+  ],
+  "education": [
+    {
+      "schoolName": "Nicolaus Copernicus University",
+      "degree": "Master's",
+      "fieldOfStudy": "Computer Science",
+      "period": { "start": "2016", "end": "2017" },
+      "url": "https://www.umk.pl/en/"
+    },
+    {
+      "schoolName": "Nicolaus Copernicus University",
+      "degree": "Engineer's",
+      "fieldOfStudy": "Computer Science",
+      "period": { "start": "2012", "end": "2016" },
+      "url": "https://www.umk.pl/en/"
+    }
+  ],
+  "skills": [
+    "Kotlin", "Java", "Swift", "Jetpack Compose", "Kotlin Multiplatform",
+    "MVVM", "MVI", "RxJava", "Room", "REST API", "Material Design", "Scrum"
+  ]
+}
