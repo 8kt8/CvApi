@@ -35,6 +35,9 @@ kotlin {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 
+    // JVM target only to run commonTest without an Android SDK (./gradlew :shared:jvmTest). Not used by the apps.
+    jvm()
+
     listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
         target.binaries.framework {
             baseName = "Shared"
@@ -49,6 +52,14 @@ kotlin {
                 api(libs.ktor.client.core)
                 implementation(libs.kotlinx.serialization.json)
             }
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.ktor.client.mock)
+            implementation(libs.kotlinx.coroutines.test)
+        }
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
