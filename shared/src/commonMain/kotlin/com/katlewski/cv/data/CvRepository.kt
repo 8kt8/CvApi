@@ -30,12 +30,17 @@ class RemoteCvRepository(
 
     override suspend fun getCv(): Cv = decodeCv(fetchJson())
 
-    /** Raw response body. Throws on HTTP errors and after an 8 s timeout. */
+    /**
+     * Raw response body. Throws [VariantGoneException] on HTTP 404/410, [IllegalStateException]
+     * on other HTTP errors and after an 8 s timeout, and the engine's exception when offline.
+     */
     suspend fun fetchJson(): String {
         // withTimeoutOrNull so a timeout surfaces as a normal failure, not as cancellation.
         return withTimeoutOrNull(TIMEOUT_MS) {
             val response = client.get(url)
-            check(response.status.isSuccess()) { "HTTP ${response.status.value} loading $url" }
+            val status = response.status.value
+            if (status == 404 || status == 410) throw VariantGoneException("HTTP $status loading $url")
+            check(response.status.isSuccess()) { "HTTP $status loading $url" }
             response.bodyAsText()
         } ?: error("Timed out loading $url")
     }
@@ -46,11 +51,35 @@ class RemoteCvRepository(
 }
 
 /**
+ * The requested CV no longer exists on the host (HTTP 404 or 410) - e.g. a revoked variant link.
+ * [CvService.latestCv] removes the cached copy of a variant before throwing this.
+ */
+class VariantGoneException(message: String) : Exception(message)
+
+/**
+ * Swift-friendly error checks. Swift receives Kotlin exceptions as `NSError` with the original in
+ * `userInfo["KotlinException"]`, exposed as `kotlinException`:
+ *
+ * ```swift
+ * } catch {
+ *     let kotlinError = (error as NSError).kotlinException as? KotlinThrowable
+ *     if CvErrors.shared.isVariantGone(throwable: kotlinError) { /* link revoked: clear UI, show message */ }
+ * }
+ * ```
+ */
+object CvErrors {
+    /** True when [throwable] is a [VariantGoneException] (null-safe). */
+    fun isVariantGone(throwable: Throwable?): Boolean = throwable is VariantGoneException
+}
+
+/**
  * Entry point for both apps (Android ViewModel and the SwiftUI view model).
  *
  * - [CvMode.Default]: show [initialCv] (the bundled CV) immediately, then replace it with [latestCv] (`default.json`).
  * - [CvMode.Variant]: show [initialCv] (the cached copy, or null - never the bundled CV), then [latestCv]
  *   (`v/<code>.json`). A failed variant load throws; it never falls back to the default CV.
+ *   HTTP 404/410 means the variant was revoked: its cached copy is removed and [VariantGoneException] is thrown.
+ *   Any other failure (offline, timeout, 5xx, invalid JSON) throws and keeps the cached copy.
  *
  * Owns its HTTP client - call [close] when done.
  */
@@ -69,6 +98,14 @@ class CvService(
         client = HttpClient(),
         baseUrl = baseUrl,
         mode = VariantCode.parse(code)?.let { CvMode.Variant(it) } ?: CvMode.Default,
+    )
+
+    /** Swift-friendly, with a persistent [cache] (e.g. `defaultIosVariantCache()`). Mode as in `(baseUrl, code)`. */
+    constructor(baseUrl: String, code: String?, cache: VariantCache) : this(
+        client = HttpClient(),
+        baseUrl = baseUrl,
+        mode = VariantCode.parse(code)?.let { CvMode.Variant(it) } ?: CvMode.Default,
+        cache = cache,
     )
 
     private val source = CvSource(baseUrl)
@@ -90,12 +127,20 @@ class CvService(
         }
     }
 
-    /** Downloads the CV for [mode]. A variant is cached on success; on failure this throws. */
+    /**
+     * Downloads the CV for [mode]. A variant is cached on success; on failure this throws.
+     * A revoked variant (HTTP 404/410) is removed from the cache and [VariantGoneException] is thrown.
+     */
     @Throws(Exception::class)
     suspend fun latestCv(): Cv = when (mode) {
         CvMode.Default -> RemoteCvRepository(client, source.defaultUrl()).getCv()
         is CvMode.Variant -> {
-            val json = RemoteCvRepository(client, source.variantUrl(mode.code)).fetchJson()
+            val json = try {
+                RemoteCvRepository(client, source.variantUrl(mode.code)).fetchJson()
+            } catch (e: VariantGoneException) {
+                cache.remove(mode.code)
+                throw e
+            }
             val cv = decodeCv(json) // only cache JSON that parses
             cache.put(mode.code, json)
             cv

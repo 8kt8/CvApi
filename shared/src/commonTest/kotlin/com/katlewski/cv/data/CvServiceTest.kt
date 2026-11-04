@@ -14,6 +14,8 @@ import kotlinx.coroutines.withContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -63,6 +65,8 @@ class CvServiceTest {
     @Test
     fun bundledCvIsSampleData() = netTest {
         // Default build bundles the fictional sample-cv.json, never real data.
+        // Built with -Pcv.bundledJson=<real file> there is nothing sample-specific to check.
+        if (!BUNDLED_IS_SAMPLE) return@netTest
         val cv = service(CvMode.Default) { null }.bundledCv()
         assertEquals("Alex Sample", cv.profile.fullName)
         assertTrue(cv.experience.size >= 3)
@@ -101,6 +105,64 @@ class CvServiceTest {
         }
         assertFails { service.latestCv() }
         assertNull(cache.get(code))
+    }
+
+    private suspend fun assertGoneRemovesCache(status: HttpStatusCode) {
+        val cache = InMemoryVariantCache()
+        cache.put(code, cvJson("Revoked Person"))
+        val service = service(CvMode.Variant(code), cache) { status to "" }
+        assertEquals("Revoked Person", service.initialCv()?.profile?.fullName)
+
+        val error = assertFailsWith<VariantGoneException> { service.latestCv() }
+        assertTrue(CvErrors.isVariantGone(error))
+        assertNull(cache.get(code))
+        assertNull(service.initialCv())
+    }
+
+    @Test
+    fun variantNotFoundRemovesCacheAndThrowsGone() = netTest { assertGoneRemovesCache(HttpStatusCode.NotFound) }
+
+    @Test
+    fun variantGoneRemovesCacheAndThrowsGone() = netTest { assertGoneRemovesCache(HttpStatusCode.Gone) }
+
+    @Test
+    fun variantServerErrorKeepsCache() = netTest {
+        val cache = InMemoryVariantCache()
+        val json = cvJson("Cached Person")
+        cache.put(code, json)
+        val service = service(CvMode.Variant(code), cache) { HttpStatusCode.InternalServerError to "" }
+        val error = assertFails { service.latestCv() }
+        assertFalse(error is VariantGoneException)
+        assertFalse(CvErrors.isVariantGone(error))
+        assertEquals(json, cache.get(code))
+        assertEquals("Cached Person", service.initialCv()?.profile?.fullName)
+    }
+
+    @Test
+    fun variantNetworkErrorKeepsCache() = netTest {
+        val cache = InMemoryVariantCache()
+        val json = cvJson("Cached Person")
+        cache.put(code, json)
+        val service = service(CvMode.Variant(code), cache) { null }
+        val error = assertFails { service.latestCv() }
+        assertFalse(CvErrors.isVariantGone(error))
+        assertEquals(json, cache.get(code))
+    }
+
+    @Test
+    fun defaultNotFoundThrowsGoneWithoutTouchingCache() = netTest {
+        val cache = InMemoryVariantCache()
+        cache.put(code, cvJson("Cached Person"))
+        val service = service(CvMode.Default, cache) { HttpStatusCode.NotFound to "" }
+        assertFailsWith<VariantGoneException> { service.latestCv() }
+        assertNotNull(cache.get(code))
+    }
+
+    @Test
+    fun isVariantGoneHelper() {
+        assertTrue(CvErrors.isVariantGone(VariantGoneException("gone")))
+        assertFalse(CvErrors.isVariantGone(IllegalStateException("HTTP 500")))
+        assertFalse(CvErrors.isVariantGone(null))
     }
 
     @Test
@@ -144,5 +206,16 @@ class CvServiceTest {
         CvService(baseUrl, null).use { assertEquals(CvMode.Default, it.mode) }
         CvService(baseUrl, "too-short").use { assertEquals(CvMode.Default, it.mode) }
         CvService().use { assertEquals(CvMode.Default, it.mode) }
+    }
+
+    @Test
+    fun swiftConstructorWithCacheUsesIt() = netTest {
+        val cache = InMemoryVariantCache()
+        cache.put(code, cvJson("Cached Person"))
+        CvService(baseUrl, code, cache).use {
+            assertEquals(CvMode.Variant(code), it.mode)
+            assertEquals("Cached Person", it.initialCv()?.profile?.fullName)
+        }
+        CvService(baseUrl, "bad", cache).use { assertEquals(CvMode.Default, it.mode) }
     }
 }
