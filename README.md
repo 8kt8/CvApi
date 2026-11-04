@@ -26,8 +26,14 @@ The host (default `https://mycv-szk.pages.dev`, `CvLinks.DEFAULT_BASE_URL`) serv
 | `<baseUrl>/default.json` | The public default CV |
 | `<baseUrl>/v/<code>.json` | A per-company variant; `code` is exactly 12 characters `[A-Za-z0-9]` |
 
-Variant share links look like `https://<host>/c/<code>` (also `?v=<code>`). `VariantCode.fromLink(link)`
-returns the code, or null when the link has no valid code.
+Variant share links look like `https://<host>/c/<code>` (also `https://<host>/?v=<code>`). `VariantCode.fromLink(link)`
+returns the code, or null when the link has no valid code. Parsing is strict (the host is not checked):
+
+- a bare code is accepted;
+- a path starting with `/c/` must be exactly `/c/<code>` (optional trailing slash; query and fragment ignored).
+  It never falls back to `?v=`, so `/c/BAD?v=<code>` is null;
+- `?v=<code>` / `&v=<code>` only counts when the path is `/` or empty;
+- anything else (`/a/c/<code>`, `/C/<code>`, `/c/<code>/extra`, `/x?v=<code>`) is null.
 
 | Mode | `initialCv()` (show immediately) | `latestCv()` (network) |
 | --- | --- | --- |
@@ -35,6 +41,15 @@ returns the code, or null when the link has no valid code.
 | `CvMode.Variant(code)` | Cached copy of that variant, or `null` (never the bundled CV) | `v/<code>.json`; cached on success, **throws** on failure (never falls back to the default CV) |
 
 Requests time out after 8 s. Unknown JSON keys are ignored.
+
+### Revoked variants
+
+Deleting `v/<code>.json` from the host (HTTP **404** or **410**) revokes that link: `latestCv()` removes the
+variant's cached copy and throws `VariantGoneException`, so the next `initialCv()` returns `null` and the app stops
+showing it offline. Any other failure (offline, timeout, 5xx, invalid JSON) throws a different exception and **keeps**
+the cached copy. In Default mode a 404/410 on `default.json` also throws `VariantGoneException` (no cache involved).
+
+Check for it with `e is VariantGoneException` in Kotlin, or `CvErrors.isVariantGone(throwable)` (null-safe, Swift-friendly).
 
 ## Usage
 
@@ -51,21 +66,59 @@ show(service.latestCv())                                          // suspend - t
 
 ```swift
 let service = CvService()                                         // default CV, default host
-// or: CvService(baseUrl: CvLinks.shared.DEFAULT_BASE_URL, code: VariantCode.shared.fromLink(link: url.absoluteString))
+// or, for a variant with a cache that survives restarts:
+// CvService(baseUrl: CvLinks.shared.DEFAULT_BASE_URL,
+//           code: VariantCode.shared.fromLink(link: url.absoluteString),
+//           cache: FileVariantCacheKt.defaultIosVariantCache())
 if let cv = try await service.initialCv() { show(cv) }
-let cv = try await service.latestCv()                             // Kotlin suspend functions become Swift async
+do {
+    show(try await service.latestCv())                            // Kotlin suspend functions become Swift async
+} catch {
+    // Kotlin exceptions arrive as NSError; the original is in kotlinException.
+    let kotlinError = (error as NSError).kotlinException as? KotlinThrowable
+    if CvErrors.shared.isVariantGone(throwable: kotlinError) {
+        showRevoked()                                             // cached copy already removed
+    } else {
+        showOfflineBanner()                                       // keep showing initialCv()
+    }
+}
 ```
+
+### iOS file cache
+
+`FileVariantCache(directoryPath:)` (iOS only) stores each variant as `<directoryPath>/<code>.json`, written atomically
+with Foundation (no extra dependencies). Codes are validated with `VariantCode.parse` before any path is built.
+`defaultIosVariantCache()` uses `<Application Support>/variants`, creating Application Support if missing.
+Without a cache argument `CvService` uses `InMemoryVariantCache`, which is lost when the app is killed.
+On Android, implement `VariantCache` (`get`/`put`/`remove`) over DataStore or files.
 
 `bundledCv()` is still available for backwards compatibility.
 
-## Build with your own CV
+### API changes on this branch
+
+- `CvService`'s second parameter is now `baseUrl` (host root; `default.json` and `v/<code>.json` are resolved from it),
+  not the full JSON URL. `RemoteCvRepository.DEFAULT_URL` was removed; use `CvLinks.DEFAULT_BASE_URL`.
+- `VariantCache` has a new `remove(code)` member; custom implementations must add it.
+- New: `VariantGoneException`, `CvErrors`, `CvService(baseUrl, code, cache)`, iOS `FileVariantCache` / `defaultIosVariantCache()`.
+
+## Building with your real CV
 
 The CV compiled into the app comes from the Gradle property `cv.bundledJson`
-(default `../sample-cv.json`, relative to `shared/`):
+(default `../sample-cv.json`, relative to `shared/`). Set it once in `~/.gradle/gradle.properties`:
+
+```properties
+cv.bundledJson=/absolute/path/to/mycv-site/public/default.json
+```
+
+This applies to every Gradle build on your machine, including the Xcode build phase of MyCV-iOS, which cannot pass `-P`.
+For a one-off build you can still pass it on the command line:
 
 ```bash
 ./gradlew :shared:assemble -Pcv.bundledJson=/path/to/my-cv.json
 ```
+
+Use an absolute path (a relative one resolves against `shared/`). Without the property the fictional sample is
+bundled; the test `bundledCvIsSampleData` checks the sample only in that case (generated `BUNDLED_IS_SAMPLE`).
 
 The JSON must match the `Cv` model in `shared/src/commonMain/kotlin/com/katlewski/cv/data/CvModels.kt`
 (see `sample-cv.json`). Keep your real file outside this repo. Store links per experience:
