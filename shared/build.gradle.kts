@@ -4,20 +4,24 @@ plugins {
     alias(libs.plugins.android.kmp.library)
 }
 
-// Bundles ../cv.json into the app as the offline fallback, so cv.json stays the single source of truth.
-val cvJson = layout.projectDirectory.file("../cv.json")
+// Bundles a CV JSON into the app as the offline fallback for the default CV.
+// Defaults to the fictional ../sample-cv.json; build with your own via -Pcv.bundledJson=/path/to/cv.json
+// (relative paths resolve against this module's directory).
+val bundledCvJson = layout.projectDirectory.file(
+    providers.gradleProperty("cv.bundledJson").orElse("../sample-cv.json"),
+)
 val bundledCvDir = layout.buildDirectory.dir("generated/bundledCv/kotlin")
 val generateBundledCv = tasks.register("generateBundledCv") {
-    inputs.file(cvJson)
+    inputs.file(bundledCvJson)
     outputs.dir(bundledCvDir)
-    val input = cvJson.asFile
+    val input = bundledCvJson.map { it.asFile }
     val output = bundledCvDir.map { it.file("com/katlewski/cv/data/BundledCvJson.kt").asFile }
     doLast {
-        val json = input.readText().replace("$", "\${'$'}")
+        val json = input.get().readText().replace("$", "\${'$'}")
         output.get().apply {
             parentFile.mkdirs()
             writeText(
-                "// Generated from cv.json - do not edit.\npackage com.katlewski.cv.data\n\n" +
+                "// Generated from the cv.bundledJson Gradle property - do not edit.\npackage com.katlewski.cv.data\n\n" +
                     "internal const val BUNDLED_CV_JSON: String = \"\"\"$json\"\"\"\n",
             )
         }

@@ -1,0 +1,105 @@
+{
+  "profile": {
+    "fullName": "Alex Sample",
+    "headline": "Senior Mobile Engineer · Android & Kotlin Multiplatform",
+    "about": "Fictional sample CV used by the open-source My CV apps. Alex builds native Android apps and shared Kotlin Multiplatform modules, from first prototype to store release, with a focus on clean architecture, testing and accessible UI.",
+    "photoUrl": null,
+    "location": "Sampleton, Exampleland"
+  },
+  "contacts": [
+    { "type": "GitHub", "label": "github.example.com/alex-sample", "url": "https://github.example.com/alex-sample" },
+    { "type": "LinkedIn", "label": "Alex Sample", "url": "https://www.example.com/in/alex-sample" },
+    { "type": "Email", "label": "alex@example.com", "url": "mailto:alex@example.com" },
+    { "type": "Website", "label": "alex.example.com", "url": "https://alex.example.com" }
+  ],
+  "experience": [
+    {
+      "companyName": "Example Travel Co.",
+      "role": "Senior Android Engineer",
+      "period": { "start": "2023-03" },
+      "companyUrl": "https://travel.example.com",
+      "location": "Remote",
+      "summary": "Booking app used by millions of travellers each month.",
+      "highlights": [
+        "Led the migration of the search and checkout flows to Jetpack Compose.",
+        "Extracted pricing and availability logic into a Kotlin Multiplatform module shared with iOS.",
+        "Cut cold start time by 35% with baseline profiles and lazy initialisation."
+      ],
+      "techStack": ["Kotlin", "Jetpack Compose", "Kotlin Multiplatform", "Coroutines", "Ktor", "Hilt"],
+      "apps": [
+        { "name": "Example Travel", "store": "GooglePlay", "url": "https://play.example.com/store/apps/details?id=com.example.travel" },
+        { "name": "Example Travel", "store": "AppStore", "url": "https://apps.example.com/app/id000000001" }
+      ]
+    },
+    {
+      "companyName": "Sample Airlines",
+      "role": "Android Developer",
+      "period": { "start": "2020-01", "end": "2023-02" },
+      "companyUrl": "https://airline.example.com",
+      "location": "Sampleton",
+      "summary": "Check-in, boarding pass and loyalty features for a fictional airline.",
+      "highlights": [
+        "Built offline boarding passes with encrypted local storage.",
+        "Introduced screenshot tests and raised unit test coverage from 20% to 70%.",
+        "Mentored three junior developers."
+      ],
+      "techStack": ["Kotlin", "Android Views", "RxJava", "Room", "Dagger"],
+      "apps": [
+        { "name": "Sample Airlines", "store": "GooglePlay", "url": "https://play.example.com/store/apps/details?id=com.example.airline" }
+      ]
+    },
+    {
+      "companyName": "Demo Health Labs",
+      "role": "Mobile Developer",
+      "period": { "start": "2017-06", "end": "2019-12" },
+      "companyUrl": "https://health.example.com",
+      "summary": "Fitness tracking app with wearable integration.",
+      "highlights": [
+        "Implemented Bluetooth LE sync with fitness bands.",
+        "Shipped a companion web dashboard."
+      ],
+      "techStack": ["Java", "Kotlin", "Bluetooth LE", "Firebase"],
+      "apps": [
+        { "name": "Demo Health", "store": "Web", "url": "https://health.example.com/app" }
+      ]
+    },
+    {
+      "companyName": "Placeholder Software House",
+      "role": "Junior Android Developer",
+      "period": { "start": "2015-09", "end": "2017-05" },
+      "companyUrl": "https://software.example.com",
+      "highlights": [
+        "Delivered five client apps from design to release.",
+        "Maintained the in-house networking library."
+      ],
+      "techStack": ["Java", "Retrofit", "SQLite"]
+    }
+  ],
+  "education": [
+    {
+      "schoolName": "University of Exampleland",
+      "degree": "Master of Science",
+      "fieldOfStudy": "Computer Science",
+      "period": { "start": "2013", "end": "2015" },
+      "url": "https://university.example.com"
+    },
+    {
+      "schoolName": "University of Exampleland",
+      "degree": "Bachelor of Engineering",
+      "fieldOfStudy": "Computer Science",
+      "period": { "start": "2009", "end": "2013" },
+      "url": "https://university.example.com"
+    }
+  ],
+  "skills": [
+    "Kotlin",
+    "Java",
+    "Jetpack Compose",
+    "Kotlin Multiplatform",
+    "Coroutines & Flow",
+    "Clean Architecture",
+    "Unit & UI testing",
+    "CI/CD",
+    "Swift (basics)"
+  ]
+}
