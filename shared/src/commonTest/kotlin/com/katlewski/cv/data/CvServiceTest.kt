@@ -7,7 +7,10 @@ import io.ktor.client.engine.mock.respondError
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -20,6 +23,10 @@ class CvServiceTest {
     private val code = "Ab3dEf6hIj9L"
 
     private fun cvJson(name: String) = """{"profile":{"fullName":"$name","headline":"h","about":"a"},"extra":1}"""
+
+    // runTest skips delays, so the 8 s request timeout could fire while MockEngine answers on another
+    // dispatcher. Running the body on Dispatchers.Default keeps the timeout on real time.
+    private fun netTest(body: suspend CoroutineScope.() -> Unit) = runTest { withContext(Dispatchers.Default, body) }
 
     private class Recorder {
         val urls = mutableListOf<String>()
@@ -45,7 +52,7 @@ class CvServiceTest {
     }
 
     @Test
-    fun defaultInitialCvIsBundled() = runTest {
+    fun defaultInitialCvIsBundled() = netTest {
         val service = service(CvMode.Default) { null }
         val initial = service.initialCv()
         assertNotNull(initial)
@@ -54,7 +61,7 @@ class CvServiceTest {
     }
 
     @Test
-    fun bundledCvIsSampleData() = runTest {
+    fun bundledCvIsSampleData() = netTest {
         // Default build bundles the fictional sample-cv.json, never real data.
         val cv = service(CvMode.Default) { null }.bundledCv()
         assertEquals("Alex Sample", cv.profile.fullName)
@@ -62,7 +69,7 @@ class CvServiceTest {
     }
 
     @Test
-    fun defaultLatestCvLoadsDefaultJson() = runTest {
+    fun defaultLatestCvLoadsDefaultJson() = netTest {
         val recorder = Recorder()
         val service = service(CvMode.Default, recorder = recorder) { HttpStatusCode.OK to cvJson("Default Person") }
         assertEquals("Default Person", service.latestCv().profile.fullName)
@@ -70,13 +77,13 @@ class CvServiceTest {
     }
 
     @Test
-    fun variantInitialCvIsNullWithoutCacheAndNeverBundled() = runTest {
+    fun variantInitialCvIsNullWithoutCacheAndNeverBundled() = netTest {
         val service = service(CvMode.Variant(code)) { null }
         assertNull(service.initialCv())
     }
 
     @Test
-    fun variantNetworkFailureThrowsAndDoesNotReturnDefault() = runTest {
+    fun variantNetworkFailureThrowsAndDoesNotReturnDefault() = netTest {
         val recorder = Recorder()
         val service = service(CvMode.Variant(code), recorder = recorder) { url ->
             if (url.endsWith("/default.json")) HttpStatusCode.OK to cvJson("Default Person") else null
@@ -87,7 +94,7 @@ class CvServiceTest {
     }
 
     @Test
-    fun variantHttpErrorThrows() = runTest {
+    fun variantHttpErrorThrows() = netTest {
         val cache = InMemoryVariantCache()
         val service = service(CvMode.Variant(code), cache) { url ->
             if (url.endsWith("/default.json")) HttpStatusCode.OK to cvJson("Default Person") else HttpStatusCode.NotFound to ""
@@ -97,7 +104,7 @@ class CvServiceTest {
     }
 
     @Test
-    fun variantInvalidJsonThrowsAndIsNotCached() = runTest {
+    fun variantInvalidJsonThrowsAndIsNotCached() = netTest {
         val cache = InMemoryVariantCache()
         val service = service(CvMode.Variant(code), cache) { HttpStatusCode.OK to "<html>not json</html>" }
         assertFails { service.latestCv() }
@@ -105,7 +112,7 @@ class CvServiceTest {
     }
 
     @Test
-    fun variantSuccessIsCachedAndReturnedByInitialCv() = runTest {
+    fun variantSuccessIsCachedAndReturnedByInitialCv() = netTest {
         val cache = InMemoryVariantCache()
         val recorder = Recorder()
         val json = cvJson("Variant Person")
@@ -125,7 +132,7 @@ class CvServiceTest {
     }
 
     @Test
-    fun corruptCacheEntryIsIgnored() = runTest {
+    fun corruptCacheEntryIsIgnored() = netTest {
         val cache = InMemoryVariantCache()
         cache.put(code, "{broken")
         assertNull(service(CvMode.Variant(code), cache) { null }.initialCv())
