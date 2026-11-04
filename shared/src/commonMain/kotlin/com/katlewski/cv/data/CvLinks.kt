@@ -35,30 +35,41 @@ object VariantCode {
     }
 
     /**
-     * Code from a share link, or null when the link has no valid code. Accepts
-     * `https://<host>/c/<code>` (optionally with a trailing slash, query or fragment),
-     * `...?v=<code>` / `...&v=<code>`, and a bare code.
+     * Code from a share link, or null when the link has no valid code. Accepts:
+     * - a bare code;
+     * - a link whose path is exactly `/c/<code>` (optional trailing slash; query and fragment ignored).
+     *   When the path starts with `/c/`, only that segment counts - `?v=` is not consulted;
+     * - a link whose path is `/` or empty, with the code in `?v=<code>` / `&v=<code>`.
+     *
+     * Anything else (`/a/c/<code>`, `/C/<code>`, `/c/<code>/extra`, ...) returns null.
+     * The host is not checked.
      */
     fun fromLink(link: String?): String? {
         val text = link?.trim()?.takeIf { it.isNotEmpty() } ?: return null
         parse(text)?.let { return it }
 
         val withoutFragment = text.substringBefore('#')
-        val path = withoutFragment.substringBefore('?')
+        val beforeQuery = withoutFragment.substringBefore('?')
         val query = withoutFragment.substringAfter('?', missingDelimiterValue = "")
 
-        val segments = path.substringAfter("://", path).split('/')
-        // segments[0] is the host (or empty for a relative "/c/..." link).
-        val cIndex = segments.drop(1).indexOf("c").takeIf { it >= 0 }?.plus(1)
-        if (cIndex != null && segments.drop(cIndex + 2).all { it.isEmpty() }) {
-            parse(segments.getOrNull(cIndex + 1))?.let { return it }
+        // "host/path", "host", or a relative "/path".
+        val afterScheme = beforeQuery.substringAfter("://", beforeQuery)
+        val path = if (afterScheme.startsWith('/')) afterScheme else "/" + afterScheme.substringAfter('/', missingDelimiterValue = "")
+
+        if (path.startsWith("/c/")) {
+            val segment = path.removePrefix("/c/").removeSuffix("/")
+            return if ('/' in segment) null else exact(segment)
         }
+        if (path != "/") return null
 
         return query.split('&')
             .firstOrNull { it.substringBefore('=') == "v" }
             ?.substringAfter('=', missingDelimiterValue = "")
-            ?.let(::parse)
+            ?.let(::exact)
     }
+
+    /** Like [parse] but without trimming: [raw] itself must be the code. */
+    private fun exact(raw: String): String? = raw.takeIf { it.length == LENGTH && it.all(::isCodeChar) }
 
     private fun isCodeChar(c: Char): Boolean = c in 'a'..'z' || c in 'A'..'Z' || c in '0'..'9'
 }

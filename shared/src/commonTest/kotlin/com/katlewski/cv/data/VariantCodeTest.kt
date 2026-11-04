@@ -67,6 +67,25 @@ class VariantCodeTest {
         assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/?v=Ab3dEf%6hIj9"))
         assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/?xv=$code"))
         assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/x/$code"))
+        assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/c/ $code"))
+    }
+
+    @Test
+    fun fromLinkPathCodeIsStrict() {
+        // A /c/ path decides alone: no fallback to ?v= when its segment is invalid.
+        assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/c/BAD?v=$code"))
+        assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/c/?v=$code"))
+        assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/a/c/$code"))
+        assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/C/$code"))
+        assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/c//$code"))
+        assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/c/$code//"))
+        assertNull(VariantCode.fromLink("/a/c/$code"))
+        // ?v= only counts on the root path.
+        assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/x?v=$code"))
+        assertNull(VariantCode.fromLink("https://mycv-szk.pages.dev/c?v=$code"))
+        // Host is not checked.
+        assertEquals(code, VariantCode.fromLink("https://other.example/c/$code"))
+        assertEquals(code, VariantCode.fromLink("https://other.example/?v=$code"))
     }
 }
 
